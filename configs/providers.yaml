@@ -1,0 +1,75 @@
+# ────────────────────────────────────────────────────────────────────────────
+# omirouter config — the routing table behind the single virtual model "max".
+#
+#   providers:  every deployment you can call (BYOK). `api_key_env` names the
+#               variable read from .env. `tags` mark what it's good at.
+#   groups:     per task kind, an ORDERED fallback chain of provider NAMES.
+#               First healthy entry wins; 429/5xx → next entry + cooldown.
+#
+# Model IDs drift with provider releases — THIS file is the only place any
+# model name lives. Update here; nothing else changes. (Checked 2026-09.)
+# ────────────────────────────────────────────────────────────────────────────
+
+providers:
+  - name: gemini-flash
+    model: gemini/gemini-2.5-flash
+    api_key_env: GEMINI_API_KEY
+    tags: [fast, vision, long-context]
+    priority: 10
+
+  - name: gemini-pro
+    model: gemini/gemini-2.5-pro
+    api_key_env: GEMINI_API_KEY
+    tags: [reason]
+    priority: 30
+
+  - name: groq-llama
+    model: groq/llama-3.3-70b-versatile
+    api_key_env: GROQ_API_KEY
+    tags: [fast]
+    priority: 20
+
+  - name: deepseek-chat
+    model: deepseek/deepseek-chat
+    api_key_env: DEEPSEEK_API_KEY
+    tags: [code, long-context]
+    priority: 10
+
+  - name: openrouter-qwen-coder
+    model: openrouter/qwen/qwen3-coder:free
+    api_key_env: OPENROUTER_API_KEY
+    tags: [code]
+    priority: 30
+
+  - name: openrouter-deepseek-r1
+    model: openrouter/deepseek/deepseek-r1:free
+    api_key_env: OPENROUTER_API_KEY
+    tags: [reason]
+    priority: 30
+
+  # ── LATER: uncomment when the keys exist — routing picks them up by tag ──
+  # - name: anthropic-sonnet
+  #   model: anthropic/claude-sonnet-4-5
+  #   api_key_env: ANTHROPIC_API_KEY
+  #   tags: [code, premium]
+  #   priority: 1
+  # - name: openai-gpt
+  #   model: openai/gpt-5-mini
+  #   api_key_env: OPENAI_API_KEY
+  #   tags: [code, premium]
+  #   priority: 2
+
+groups:
+  code-edit:   [deepseek-chat, openrouter-qwen-coder, gemini-flash]
+  shell-debug: [gemini-flash, groq-llama]
+  plan-reason: [openrouter-deepseek-r1, deepseek-chat, gemini-pro]
+  long-context: [deepseek-chat, gemini-flash]
+  vision:      [gemini-flash]
+  default:     [gemini-flash, groq-llama, deepseek-chat]
+
+router:
+  cooldown_s: 45          # a failing deployment is skipped for this long
+  max_retries: 2          # retries within one entry before walking the chain
+  classify: heuristic     # heuristic | task-header   (task-header trusts
+                          # the X-Omi-Task header the agent sends; heuristic
+                          # also works for arbitrary /v1 clients)

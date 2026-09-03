@@ -1,0 +1,32 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# secrets & local state
+.env
+!.env.example
+.omi/
+*.sqlite3
+*.db
+
+# node / ui
+ui/node_modules/
+ui/dist/
+node_modules/
+
+# editors & os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# runtime artifacts
+*.log
+omi-workspaces/

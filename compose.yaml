@@ -1,0 +1,31 @@
+# One-command full stack: server + UI + (optional) docker sandbox.
+#   docker build -t omiagent/runtime:local sandbox && docker compose up
+# The server container talks to your Docker daemon to spawn per-task
+# sandbox containers; the SANDBOX never sees docker.sock (see docs/security.md).
+services:
+  omiagent:
+    build: .
+    image: omiagent/server:local
+    container_name: omiagent
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${OMI_PORT:-8000}:8000"
+    environment:
+      OMI_HOST: 0.0.0.0
+      OMI_SANDBOX: docker
+      OMI_SANDBOX_IMAGE: omiagent/runtime:local
+      OMI_WORKSPACES_DIR: /workspaces
+      OMI_PROVIDERS_FILE: /app/configs/providers.yaml
+      DOCKER_HOST: unix:///var/run/docker.sock
+      # keys come from your .env file
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPEN…Y:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      OMI_GATEWAY_KEY: ${OMI_GATEWAY_KEY:-}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - omi-data:/root/.omi
+      - ${OMI_REPO_DIR:-./examples/demo_repo}:/workspaces/repo
+volumes:
+  omi-data:
