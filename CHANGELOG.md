@@ -30,6 +30,8 @@ Initial public shape — a self-hosted coding agent modeled on arena.ai/agent.
   live cost meter and per-step model badges.
 - **UX niceties**: offline demo (`omiagent demo --fake`), usage audit,
   secret redaction in transcripts.
+- `omiagent ping` one-shot key/routing smoke; key-gated live provider
+  suite (`pytest -m live`, `make live-test`).
 - Docs, CI (pytest + ruff + UI build), compose/Dockerfile, MIT license.
 
 [0.1.0]: https://github.com/<you>/omiagent/releases/tag/v0.1.0

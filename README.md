@@ -79,6 +79,13 @@ Docs: [getting started](docs/getting-started.md) ·
 [routing & providers](docs/routing-and-providers.md) ·
 [security](docs/security.md) · [roadmap](docs/roadmap.md)
 
+## Prove your keys in 5 seconds
+
+```bash
+uv run omiagent ping            # one real 'max' call: shows group → provider → tokens → $
+make live-test                  # full key-gated live suite (also: pytest -m live)
+```
+
 ## Try it without any keys (offline demo)
 
 ```bash

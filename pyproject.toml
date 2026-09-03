@@ -64,3 +64,6 @@ ignore = ["B008", "SIM105"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+    "live: hits real provider APIs — skipped unless keys are in the env (see tests/test_live_provider.py)",
+]

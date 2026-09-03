@@ -24,12 +24,54 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("--mode", choices=["plan", "auto"], default="plan")
     d.add_argument("--fake", action="store_true", help="offline demo: scripted model, real tools")
 
+    sub.add_parser("ping", help="one real provider call through omirouter — proves your keys")
+
     args = p.parse_args(argv)
     if args.cmd == "serve":
         return _serve(args)
     if args.cmd == "demo":
         return _demo(args)
+    if args.cmd == "ping":
+        return _ping()
     return 0
+
+
+def _ping() -> int:
+    import asyncio
+
+    from .config import get_settings
+    from .gateway.audit import UsageLog
+    from .gateway.router import GatewayError, MaxRouter
+
+    settings = get_settings()
+    router = MaxRouter(settings.providers, usage=UsageLog(settings.data_dir / "usage.db"))
+    names = [p.name for p in settings.providers.available()]
+    print(f"⚡ omiagent ping — providers ready: {', '.join(names) if names else 'NONE'}")
+    if not names:
+        print("   no keys visible: export them or fill .env (see .env.example), then retry")
+        return 2
+
+    async def go() -> int:
+        try:
+            res = await asyncio.wait_for(
+                router.chat(
+                    [{"role": "user", "content": "Reply with exactly: OMI-OK"}],
+                    caller="ping",
+                ),
+                timeout=45,
+            )
+        except (TimeoutError, GatewayError) as e:
+            print(f"   ✗ call failed: {e}")
+            return 1
+        print(
+            f"   ✓ group={res.group} → provider={res.provider} ({res.model})  "
+            f"{res.tokens_in}↑ {res.tokens_out}↓ tok  ${res.usd:.4f}  {res.elapsed_ms} ms"
+        )
+        print(f"   reply: {res.text.strip()[:120]!r}")
+        print("   keys + routing + usage ledger all alive — you're cleared for tasks 🫡")
+        return 0
+
+    return asyncio.run(go())
 
 
 def _serve(args: argparse.Namespace) -> int:

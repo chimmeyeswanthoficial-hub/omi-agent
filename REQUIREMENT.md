@@ -54,6 +54,8 @@ Then open **http://127.0.0.1:8000** in any browser. That's the whole startup.
 
 | Command | Effect |
 |---|---|
+| `omiagent ping` | **one real provider call** through omirouter — proves keys, routing & usage ledger before your first task |
+| `make live-test` | key-gated live test suite (`pytest -m live`; skipped silently without keys) |
 | `omiagent serve --port 8080` | serve on another port |
 | `omiagent demo --fake` | offline demo: scripted model, real tools/snapshots (no keys, no network) |
 | `omiagent demo` | live demo on `examples/demo_repo` using your keys |
